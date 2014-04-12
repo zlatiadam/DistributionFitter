@@ -6,11 +6,15 @@ package DistributionFitter;
 
 import DistributionEstimator.DistributionEstimator;
 import Distributions.Distribution;
+import Distributions.EmpiricalDistribution;
 import Distributions.NormalDistribution;
 import GoodnessOfFitEstimators.PearsonsChiSquareTest;
 import Utility.Descriptives;
-import java.io.BufferedWriter;
-import java.io.File;
+import Variables.ContinuousNumericalVariable;
+import Variables.DiscreteNumericalVariable;
+import Variables.NominalVariable;
+import java.util.HashMap;
+
 import java.util.Random;
 
 /**
@@ -23,35 +27,29 @@ public class DistributionFitter {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        int num_obs = 100;
         
-        String[] observations = new String[1000000];
-        Double[] observations_d = new Double[1000000];
+        String[] observations = new String[num_obs];
+        Double[] observations_d = new Double[num_obs];
         
         //generator function
         Random r = new Random();
-        double stdev = 1.0;
+        double stdev = 10.0;
         double mean = 10.0;
         
         r.setSeed(1000);
         
         
-        for(int i=0; i<observations.length; i++){
+        for(int i=0; i<observations_d.length; i++){
             observations_d[i] = (stdev*r.nextGaussian()+mean);
             
-            observations[i] = Double.toString(observations_d[i]);
-            //observations[i] = Integer.toString((int)Math.round(observations_d[i]));
+            //observations[i] = Double.toString(observations_d[i]);
+            observations[i] = Integer.toString((int)Math.round(observations_d[i]));
         }
         
-        /*
-        NormalDistribution d2 = new NormalDistribution(null);
-        d2.fit(observations_d);
-        */
-        //System.out.println(PearsonsChiSquareTest.calculateTestStatistic(observations_d, 1000, d2));
-
-        
         Distribution d = DistributionEstimator.estimateDistribution(observations);
-        
-        d.GOF(observations_d, "Pearson");
+
+        //d.GOF(observations_d, "Pearson");
         
         if(d != null)
             System.out.println("Distribution:"+d.getDistributionType()+", params:"+d.getParameters().toString()+", GOF:"+d.getLastGOFTest());

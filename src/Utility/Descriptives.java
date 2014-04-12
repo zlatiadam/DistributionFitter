@@ -4,6 +4,7 @@
  */
 package Utility;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -15,14 +16,13 @@ import java.util.TreeMap;
 public class Descriptives {
     
     /*
-     * returns the frequency table of the values in the observations
-     * the values are stored in a HashMap and represent an unsorted histogram (for the sake of performance)
+     * returns the frequency table (histogram) of the values in the observations
      */
-    public static HashMap<Double,Integer> unsortedFrequencies(Double[] observations, Integer histogramColumnNumber){
+    public static SortedMap<Double,Integer> Histogram(Double[] observations, Integer histogramColumnNumber){
         
-        HashMap<Double, Integer> histogram = new HashMap<Double, Integer>();
+        SortedMap<Double, Integer> histogram = new TreeMap<Double, Integer>();
+        int[] base_histogram = new int[histogramColumnNumber];
         
-        Integer num_temp = 0;
         Double min = observations[0], max = observations[0];
         
         //determine the max and min
@@ -36,39 +36,33 @@ public class Descriptives {
         
         //initialize the histogram; assume every column has 0 frequency
         for(int i=0; i<histogramColumnNumber; i++){
-            histogram.put(min+(i+0.5)*rangeSize, 0);
+            base_histogram[i] = 0;
         }
         
-        Double column_index = 0.0;
+
+        int column_index = 0;
         
         for(int i=0; i<observations.length; i++){
             
             //calculate to which column the value belongs
-            column_index = min + (Math.floor((observations[i]-min)/rangeSize)+0.5)*rangeSize;
+            if((observations[i] - min) < 0.001){
+                column_index = 0;
+            }else if((max - observations[i]) < 0.001){
+                column_index = histogramColumnNumber-1;
+            }else{
+                column_index = (int)Math.floor((observations[i]-min)/rangeSize);
+            }
             
-            
-            num_temp = histogram.get(column_index);
-            
-            if(num_temp == null) num_temp = 0;
-            num_temp++;
-            
-            histogram.put(column_index, num_temp);
+            //add the value to the column
+            base_histogram[column_index]++;
+        }
+        
+        //generate a histogram from the base
+        for(int i=0; i<histogramColumnNumber; i++){
+            histogram.put(min+i*rangeSize+rangeSize/2, base_histogram[i]);
         }
         
         return histogram;
-    }
-    
-    /*
-     * sorted version of the above
-     */
-    public static SortedMap sortedFrequencies(Double[] observations, Integer histogramColumnNumber){
-        //calculate the item frequencies
-        HashMap<Double, Integer> frequencies = unsortedFrequencies(observations, histogramColumnNumber);
-        
-        //create a sorted
-        SortedMap sortedFrequencies = new TreeMap(frequencies);
-        
-        return sortedFrequencies;
     }
     
 }

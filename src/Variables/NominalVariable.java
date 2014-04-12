@@ -72,4 +72,8 @@ public class NominalVariable extends Variable{
         return obs;
     }
     
+    public HashMap<String,Integer> getEnumTable(){
+        return this.enumTable;
+    }
+    
 }

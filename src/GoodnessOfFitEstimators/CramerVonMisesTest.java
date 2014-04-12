@@ -5,7 +5,7 @@
 package GoodnessOfFitEstimators;
 
 import Distributions.Distribution;
-import Distributions.Empirical;
+import Distributions.EmpiricalDistribution;
 import java.util.Arrays;
 
 /**
@@ -93,7 +93,7 @@ public class CramerVonMisesTest {
         
         double sum = 0.0;
         
-        Empirical empDist = new Empirical(observations);
+        EmpiricalDistribution empDist = new EmpiricalDistribution(observations);
         
         Double areaUnderEmpiricalCurve, areaUnderTheoreticalCurve;
         

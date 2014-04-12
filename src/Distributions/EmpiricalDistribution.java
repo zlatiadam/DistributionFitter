@@ -8,11 +8,11 @@ package Distributions;
  *
  * @author Zlati
  */
-public class Empirical {
+public class EmpiricalDistribution {
     
     Double[] observations = null;
     
-    public Empirical(Double[] observations){
+    public EmpiricalDistribution(Double[] observations){
         this.observations = observations;
     }
     

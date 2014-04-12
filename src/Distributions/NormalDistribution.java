@@ -79,7 +79,7 @@ public class NormalDistribution extends Distribution {
         
         double sum = 0.0;
         
-        for(int i=1; i<observations.length; i++){
+        for(int i=0; i<observations.length; i++){
             sum += observations[i];
         }
         
@@ -92,7 +92,7 @@ public class NormalDistribution extends Distribution {
         if(mean == null){
             double sum = 0.0;
         
-            for(int i=1; i<observations.length; i++){
+            for(int i=0; i<observations.length; i++){
                 sum += observations[i];
             }
             
@@ -103,10 +103,10 @@ public class NormalDistribution extends Distribution {
         double sum = 0.0;
         
         for(int i=0; i<observations.length; i++)
-            sum += Math.pow(observations[i]-mean,2);
+            sum += (observations[i]-mean)*(observations[i]-mean);
         
         
-        return Math.sqrt(sum/observations.length);
+        return Math.sqrt(sum/(observations.length-1));
     }
 
     @Override
@@ -188,13 +188,14 @@ public class NormalDistribution extends Distribution {
         return _CumulativeDistributionFunction(value,mu,sigma);
     }
     
-
+    
+    //not used currently
     @Override
     public Double getError(Double[] observations, String type, Integer histogramColumnNumber) {
         
         Double error = 0.0;
         
-        SortedMap empiricalHistogram = Descriptives.sortedFrequencies(observations, histogramColumnNumber);
+        SortedMap empiricalHistogram = Descriptives.Histogram(observations, histogramColumnNumber);
         
         Double[] empiricalDensity = new Double[empiricalHistogram.size()];
         
@@ -287,11 +288,11 @@ public class NormalDistribution extends Distribution {
                 throw new UnsupportedOperationException(type+" not yet implemented.");
                 
             case "PearsonsChiSquare":
-                gof = PearsonsChiSquareTest.calculateTestStatistic(observations, (int) Math.sqrt(observations.length), this);
+                gof = PearsonsChiSquareTest.calculateTestStatistic(observations, 10, this);
                 this.gof = new GoodnessOfFit(gof, "Pearson");
                 break;
             case "Pearson":
-                gof = PearsonsChiSquareTest.calculateTestStatistic(observations, (int) Math.sqrt(observations.length), this);
+                gof = PearsonsChiSquareTest.calculateTestStatistic(observations, 10, this);
                 this.gof = new GoodnessOfFit(gof, "Pearson");
                 break;
             default:

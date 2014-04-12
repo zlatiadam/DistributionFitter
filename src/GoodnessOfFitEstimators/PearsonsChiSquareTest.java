@@ -8,6 +8,8 @@ import Distributions.Distribution;
 import Utility.Descriptives;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  *
@@ -19,24 +21,25 @@ public class PearsonsChiSquareTest {
         
         Double chi2 = 0.0;
         
-        HashMap<Double, Integer> empiricalFrequencies = Descriptives.unsortedFrequencies(observations, numOfObservedFrequencies);
+        SortedMap<Double, Integer> empiricalFrequencies = Descriptives.Histogram(observations, numOfObservedFrequencies);
+        
+        Double min = empiricalFrequencies.firstKey();
+        Double max = empiricalFrequencies.lastKey();
+        
+        double range = (max-min)/(empiricalFrequencies.keySet().size()-1);
         
         for(Map.Entry<Double, Integer> entry : empiricalFrequencies.entrySet()){
             
-            //there's a slight modification I used to get lower test statistics since the p values are irrelevant for the 
-            //distribution comparison
+            double rangeProb = theoreticalDistribution.F(entry.getKey()+range/2)-theoreticalDistribution.F(entry.getKey()-range/2);
             
-            chi2 += (entry.getValue() - theoreticalDistribution.P(entry.getKey())*observations.length/numOfObservedFrequencies*10)*
-                    (entry.getValue() - theoreticalDistribution.P(entry.getKey())*observations.length/numOfObservedFrequencies*10)/
-                    (theoreticalDistribution.P(entry.getKey())*observations.length/numOfObservedFrequencies*10);
-            
-            if(theoreticalDistribution.P(entry.getKey()) == 0.0){
-                chi2 = Double.POSITIVE_INFINITY;
-                break;
-            }
+            chi2 += ((entry.getValue() - rangeProb*observations.length)*
+                    (entry.getValue() - rangeProb*observations.length))/
+                    (rangeProb*observations.length);
+ 
         }
         
-        return chi2/numOfObservedFrequencies;
+        // /numOfObservedFrequencies
+        return chi2;
     }
     
 }
