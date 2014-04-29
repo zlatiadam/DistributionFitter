@@ -4,58 +4,50 @@
  */
 package Distributions;
 
-import ErrorEstimators.MeanAbsoluteError;
-import ErrorEstimators.MeanSquaredError;
-import ErrorEstimators.RootMeanSquaredError;
 import GoodnessOfFitEstimators.CramerVonMisesTest;
 import GoodnessOfFitEstimators.GoodnessOfFit;
 import GoodnessOfFitEstimators.PearsonsChiSquareTest;
 import Utility.Descriptives;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.SortedMap;
 
 /**
  *
  * @author Zlati
  */
-public class NormalDistribution extends Distribution {
-
-    public NormalDistribution(HashMap<String,Double> params){
+public class ExponentialDistribution extends Distribution{
+    
+    public ExponentialDistribution(HashMap<String,Double> params){
         super();
         this.parameters = params;
     }
-
+    
     @Override
-    public HashMap<String,Double> estimateDistributionParameters(Double[] observations) {
+    public HashMap<String, Double> estimateDistributionParameters(Double[] observations) {
         return estimateDistributionParameters(observations, null, "ML");
     }
 
     @Override
-    public HashMap<String,Double> estimateDistributionParameters(Double[] observations, String method) {
+    public HashMap<String, Double> estimateDistributionParameters(Double[] observations, String method) {
         return estimateDistributionParameters(observations, null, method);
     }
 
     @Override
-    public HashMap<String,Double> estimateDistributionParameters(Double[] observations, HashMap<String,Double> params, String method) {
+    public HashMap<String, Double> estimateDistributionParameters(Double[] observations, HashMap<String, Double> params, String method) {
         
         HashMap<String,Double> estimatedParameters = new HashMap<String,Double>();
         
-        Double mu = null;
-        Double sigma = null;
+        Double lambda = null;
         
         if(params != null){
             //there are user defined parameters, only the remaining should be estimated
             
-            mu = params.get("mu");
-            sigma = params.get("sigma");
+            lambda = params.get("lambda");
             
         }
         
         switch(method){
                 case "ML":
-                    if(mu==null) mu = Descriptives.Mean(observations);
-                    if(sigma==null) sigma = Descriptives.Std(observations,mu);
+                    if(lambda==null) lambda = 1/Descriptives.Mean(observations);
                     break;
                 case "OLS":
                     throw new UnsupportedOperationException("OLS estimation for Normal distributions is not yet implemented!");
@@ -67,32 +59,31 @@ public class NormalDistribution extends Distribution {
                     throw new UnsupportedOperationException(method+" is not implemented.");
             }
         
-        estimatedParameters.put("mu", mu);
-        estimatedParameters.put("sigma", sigma);
+        estimatedParameters.put("lambda", lambda);
         
         this.parameters = estimatedParameters;
         
         return estimatedParameters;
+        
     }
-    
 
     @Override
-    public HashMap<String,Double> fit(Double[] observations) {
+    public HashMap<String, Double> fit(Double[] observations) {
         return estimateDistributionParameters(observations, null, "ML");
     }
 
     @Override
-    public HashMap<String,Double> fit(Double[] observations, String method) {
+    public HashMap<String, Double> fit(Double[] observations, String method) {
         return estimateDistributionParameters(observations, null, method);
     }
 
     @Override
-    public HashMap<String,Double> fit(Double[] observations, HashMap<String,Double> params, String method) {
+    public HashMap<String, Double> fit(Double[] observations, HashMap<String, Double> params, String method) {
         return estimateDistributionParameters(observations, params, method);
     }
 
     @Override
-    public HashMap<String,Double> getParameters() {
+    public HashMap<String, Double> getParameters() {
         return this.parameters;
     }
 
@@ -101,123 +92,62 @@ public class NormalDistribution extends Distribution {
         return this.parameters.get(name);
     }
     
-    public static Double _ProbabilityDensityFunction(Double value, Double mu, Double sigma) {
-        return 1/(Math.sqrt(2*Math.PI)*sigma)*Math.exp(-0.5*((value-mu)/(sigma))*((value-mu)/(sigma)));
-    }
-
-    @Override
-    public Double ProbabilityDensityFunction(Double value) {
-        double mu = parameters.get("mu");
-        double sigma = parameters.get("sigma");
-        return _ProbabilityDensityFunction(value, mu, sigma);
+    public static Double _ProbabilityDensityFunction(Double value, Double lambda){
+        
+        Double p = 0.0;
+        
+        if(value >= 0.0){
+            p = lambda*Math.exp(-1*lambda*value);
+        }else{
+            p = 0.0;
+        }
+        
+        return p;
     }
     
+    @Override
+    public Double ProbabilityDensityFunction(Double value) {
+        Double lambda = this.parameters.get("lambda");
+        return _ProbabilityDensityFunction(value, lambda);
+    }
 
     @Override
     public Double P(Double value) {
-        double mu = parameters.get("mu");
-        double sigma = parameters.get("sigma");
-        return _ProbabilityDensityFunction(value,mu,sigma);
+        Double lambda = this.parameters.get("lambda");
+        return _ProbabilityDensityFunction(value, lambda);
     }
 
-
-    /*
-     * Source: http://introcs.cs.princeton.edu/java/22library/Gaussian.java.html
-     * Approximation error: less than 8E-16
-     */
-    public static Double _CumulativeDistributionFunction(Double value, Double mu, Double sigma) {
+    public static Double _CumulativeDistributionFunction(Double value, Double lambda){
         
-        double z = (value - mu)/sigma;
-                
-        if (z < -8.0) return 0.0;
-        if (z >  8.0) return 1.0;
-        double sum = 0.0, term = z;
-        for (int i = 3; sum + term != sum; i += 2) {
-            sum  = sum + term;
-            term = term * z * z / i;
+        Double p = 0.0;
+        
+        if(lambda != null){
+            p = 1 - Math.exp(-1*value*lambda);
         }
-        return 0.5 + sum * _ProbabilityDensityFunction(z,0.0,1.0);
+        
+        return p;
     }
     
     @Override
     public Double CumulativeDistributionFunction(Double value) {
-        double mu = this.parameters.get("mu");
-        double sigma = this.parameters.get("sigma");
-        
-        return _CumulativeDistributionFunction(value, mu, sigma);
+        Double lambda = this.parameters.get("lambda");
+        return _CumulativeDistributionFunction(value, lambda);
     }
-    
+
     @Override
     public Double F(Double value) {
-        double mu = this.parameters.get("mu");
-        double sigma = this.parameters.get("sigma");
-        
-        return _CumulativeDistributionFunction(value,mu,sigma);
+        Double lambda = this.parameters.get("lambda");
+        return _CumulativeDistributionFunction(value, lambda);
     }
-    
-    
-    //not used currently
+
     @Override
-    public Double getError(Double[] observations, String type, Integer histogramColumnNumber) {
-        
-        Double error = 0.0;
-        
-        SortedMap empiricalHistogram = Descriptives.Histogram(observations, histogramColumnNumber);
-        
-        Double[] empiricalDensity = new Double[empiricalHistogram.size()];
-        
-        Double[] theoreticalDensity = new Double[empiricalHistogram.size()];
-        
-        Iterator it = empiricalHistogram.entrySet().iterator();
-        SortedMap.Entry entry = null;
-        
-        
-        int i=0;
-        
-        Double mu = this.parameters.get("mu");
-        Double sigma = this.parameters.get("sigma");
-        
-        Double columnWidth = (Double)empiricalHistogram.lastKey()-(Double)empiricalHistogram.firstKey();
-        columnWidth /= empiricalHistogram.keySet().size();
-        
-        //generate the histogram of the theoretical distribution
-        while(it.hasNext()){
-            entry = (SortedMap.Entry)it.next();
-            empiricalDensity[i] = new Double((Integer)entry.getValue());
-            
-            Double columnProbability = 0.0;
-            Double lP = _CumulativeDistributionFunction((Double)entry.getKey()-columnWidth/2, mu, sigma);
-            Double uP = _CumulativeDistributionFunction((Double)entry.getKey()+columnWidth/2, mu, sigma);
-            
-            theoreticalDensity[i] = (uP-lP)*observations.length;
-            
-            i++;
-        }
-        
-
-        switch(type){
-            case "MAE":
-                error = MeanAbsoluteError.meanAbsoluteError(theoreticalDensity, empiricalDensity);
-                break;
-            case "MSE":
-                error = MeanSquaredError.meanSquaredError(theoreticalDensity, empiricalDensity);
-                break;
-            case "RMSE":
-                error = RootMeanSquaredError.rootMeanSquaredError(theoreticalDensity, empiricalDensity);
-                break;
-            default:
-                throw new UnsupportedOperationException("The "+type+" error estimation is not yet supported.");
-        }
-        
-        return error;
+    public Double getError(Double[] observations, String type, Integer histogramColumnNuber) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-
-    
-    
     @Override
     public Double E(Double[] observations, String type, Integer histogramColumnNuber) {
-        return getError(observations, type, histogramColumnNuber);
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -279,15 +209,15 @@ public class NormalDistribution extends Distribution {
     public GoodnessOfFitEstimators.GoodnessOfFit getGOF() {
         return this.gof;
     }
-    
+
     @Override
-    public Double getLastGOFTest(){
+    public Double getLastGOFTest() {
         return this.gof.getValue();
     }
 
     @Override
     public String getDistributionType() {
-        return "Normal";
+        return "Exponential";
     }
     
 }

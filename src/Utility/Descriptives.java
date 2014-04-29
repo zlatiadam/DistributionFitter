@@ -65,4 +65,39 @@ public class Descriptives {
         return histogram;
     }
     
+    public static Double Mean(Double[] observations){
+        double sum = 0.0;
+        
+        for(int i=0; i<observations.length; i++){
+            sum += observations[i];
+        }
+        
+        return sum/observations.length;
+    }
+    
+    public static Double Std(Double[] observations, Double mean){
+        //if the mean is not provided calculate it
+        if(mean == null){
+            double sum = 0.0;
+        
+            for(int i=0; i<observations.length; i++){
+                sum += observations[i];
+            }
+            
+            mean = sum/observations.length;
+        }
+        
+        //calculate the standard deviation
+        double sum = 0.0;
+        
+        for(int i=0; i<observations.length; i++)
+            sum += (observations[i]-mean)*(observations[i]-mean);
+        
+        
+        return Math.sqrt(sum/(observations.length-1));
+    }
+    
+    public static Double Std(Double[] observations){
+        return Std(observations, null);
+    }
 }

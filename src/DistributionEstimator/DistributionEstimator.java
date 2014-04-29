@@ -6,10 +6,10 @@ package DistributionEstimator;
 
 import Distributions.Distribution;
 import Distributions.DistributionTable;
+import Distributions.ExponentialDistribution;
 import Distributions.NormalDistribution;
 import Variables.ContinuousNumericalVariable;
 import Variables.DiscreteNumericalVariable;
-import Variables.NominalVariable;
 import Variables.Variable;
 
 /**
@@ -37,7 +37,8 @@ public class DistributionEstimator {
         
         //define known distributions
         Distribution[] knownDistributions = new Distribution[]{
-            new NormalDistribution(null)
+            new NormalDistribution(null),
+            new ExponentialDistribution(null)
         };
         
         //fit the data with ML

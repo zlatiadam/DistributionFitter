@@ -11,6 +11,7 @@ import java.util.Arrays;
 /**
  *
  * @author Zlati
+ * Class should not be used since it's incomplete
  */
 public class CramerVonMisesTest {
     

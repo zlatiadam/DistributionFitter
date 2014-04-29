@@ -14,8 +14,9 @@ import Variables.ContinuousNumericalVariable;
 import Variables.DiscreteNumericalVariable;
 import Variables.NominalVariable;
 import java.util.HashMap;
-
 import java.util.Random;
+import org.apache.commons.math3.distribution.*;
+
 
 /**
  *
@@ -27,33 +28,48 @@ public class DistributionFitter {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        int num_obs = 100;
-        
+        int num_obs = 1000;
         String[] observations = new String[num_obs];
         Double[] observations_d = new Double[num_obs];
         
-        //generator function
-        Random r = new Random();
+        /*
+         * Normal Distribution
+         */
         double stdev = 10.0;
         double mean = 10.0;
-        
-        r.setSeed(1000);
-        
+        org.apache.commons.math3.distribution.NormalDistribution nd = new org.apache.commons.math3.distribution.NormalDistribution(mean, stdev);
+        nd.reseedRandomGenerator(1000);
         
         for(int i=0; i<observations_d.length; i++){
-            observations_d[i] = (stdev*r.nextGaussian()+mean);
-            
-            //observations[i] = Double.toString(observations_d[i]);
-            observations[i] = Integer.toString((int)Math.round(observations_d[i]));
+            observations_d[i] = nd.sample();
+            observations[i] = Double.toString(observations_d[i]);
         }
         
-        Distribution d = DistributionEstimator.estimateDistribution(observations);
-
-        //d.GOF(observations_d, "Pearson");
+        Distribution norm = DistributionEstimator.estimateDistribution(observations);
         
-        if(d != null)
-            System.out.println("Distribution:"+d.getDistributionType()+", params:"+d.getParameters().toString()+", GOF:"+d.getLastGOFTest());
-
+        if(norm != null)
+            System.out.println("Distribution:"+norm.getDistributionType()+", params:"+norm.getParameters().toString()+", GOF:"+norm.getLastGOFTest());
+        
+        
+        /*
+         * Exponential Distribution
+         */
+        Double lambda = 10.0;
+        org.apache.commons.math3.distribution.ExponentialDistribution ed = new ExponentialDistribution(lambda);
+        ed.reseedRandomGenerator(1000);
+        
+        for(int i=0; i<observations_d.length; i++){
+            observations_d[i] = ed.sample();
+            
+            //observations[i] = Double.toString(observations_d[i]);
+            observations[i] = Double.toString(observations_d[i]);
+        }
+        
+        Distribution exp = DistributionEstimator.estimateDistribution(observations);
+        
+        if(exp != null)
+            System.out.println("Distribution:"+exp.getDistributionType()+", params:"+exp.getParameters().toString()+", GOF:"+exp.getLastGOFTest());
+        
         
     }
     
